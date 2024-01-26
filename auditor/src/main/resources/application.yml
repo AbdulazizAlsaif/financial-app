@@ -1,0 +1,13 @@
+server:
+  servlet:
+    context-path: /audit-svc/api
+
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS
+  data:
+    mongodb:
+      auto-index-creation: true
+      uri: mongodb://localhost:27017/
+      database: financial-audit
