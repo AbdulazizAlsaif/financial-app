@@ -33,7 +33,7 @@ public class OrderHandler extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder().match(Order.class, (order) -> {
             log.info("Rest req with order, {}",order);
-            HttpRequest request = HttpRequest.POST("http://localhost:8080/audit-svc/api/v1/orders").withEntity(ContentTypes.APPLICATION_JSON, objectMapper.writeValueAsBytes(order));
+            HttpRequest request = HttpRequest.POST("http://auditor-svc:8080/audit-svc/api/v1/orders").withEntity(ContentTypes.APPLICATION_JSON, objectMapper.writeValueAsBytes(order));
             CompletionStage<HttpResponse> responseCompletionStage=  http.singleRequest(request, HttpsConnectionContext.httpsClient(SSLContext.getDefault()));
                      responseCompletionStage.whenComplete((response, throwable) -> {
                          if (throwable != null || response.status().isFailure()) {

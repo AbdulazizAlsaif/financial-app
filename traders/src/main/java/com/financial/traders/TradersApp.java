@@ -15,7 +15,7 @@ public class TradersApp {
 
         ConsumerSettings<String ,String> consumerSettings=ConsumerSettings.apply(system,new StringDeserializer(),new StringDeserializer())
             .withGroupId("traders")
-            .withBootstrapServers("localhost:9092")
+            .withBootstrapServers("kafka1:9092")
             .withProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true")
             .withProperty(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "5000");
 

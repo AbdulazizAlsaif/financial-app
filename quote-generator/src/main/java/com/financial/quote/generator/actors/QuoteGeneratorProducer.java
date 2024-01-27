@@ -20,7 +20,7 @@ public class QuoteGeneratorProducer extends AbstractActor {
     private Producer<String,String> kafkaProducer;
     public QuoteGeneratorProducer() {
         this.producerSettings = ProducerSettings.create(getContext().getSystem(), new StringSerializer(), new StringSerializer())
-            .withBootstrapServers("localhost:9092");
+            .withBootstrapServers("kafka1:9092");
         this.kafkaProducer = producerSettings.createKafkaProducer();
         this.objectMapper=new ObjectMapper().writer().withDefaultPrettyPrinter();
     }
