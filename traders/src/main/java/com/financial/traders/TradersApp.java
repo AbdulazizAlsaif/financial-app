@@ -2,7 +2,6 @@ package com.financial.traders;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
-import akka.actor.Props;
 import akka.kafka.ConsumerSettings;
 import akka.routing.*;
 import com.financial.traders.actors.QuoteConsumer;
@@ -27,13 +26,14 @@ public class TradersApp {
             .withProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true")
             .withProperty(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "5000");
 
-        List<Routee> routees = new ArrayList<Routee>();
-            for (int i = 0; i < 5; i++) {
-                ActorRef actor = system.actorOf(Trader.props(1500.00) , "trader"+i);
-                routees.add(new ActorRefRoutee(actor));
+        List<Routee> tradersBroadcastRouter = new ArrayList<Routee>();
+            for (int i = 0; i < 2; i++) {
+                String traderName="trader"+i;
+                ActorRef actor = system.actorOf(Trader.props(1500.0,traderName) , traderName);
+                tradersBroadcastRouter.add(new ActorRefRoutee(actor));
             }
 
-        Router router = new Router(new BroadcastRoutingLogic(), routees);
-        system.actorOf(QuoteConsumer.props(consumerSettings,router),"kafka-consumer");
+        Router router = new Router(new BroadcastRoutingLogic(), tradersBroadcastRouter);
+        system.actorOf(QuoteConsumer.props(consumerSettings,router),"quote-consumer");
     }
 }

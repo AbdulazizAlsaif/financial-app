@@ -9,6 +9,7 @@ import akka.http.javadsl.HttpsConnectionContext;
 import akka.http.javadsl.model.ContentTypes;
 import akka.http.javadsl.model.HttpRequest;
 import akka.http.javadsl.model.HttpResponse;
+import akka.stream.Materializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.financial.traders.entity.Order;
@@ -31,13 +32,14 @@ public class OrderHandler extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder().match(Order.class, (order) -> {
-            log.info("init rest req");
+            log.info("Rest req with order, {}",order);
             HttpRequest request = HttpRequest.POST("http://localhost:8080/audit-svc/api/v1/orders").withEntity(ContentTypes.APPLICATION_JSON, objectMapper.writeValueAsBytes(order));
             CompletionStage<HttpResponse> responseCompletionStage=  http.singleRequest(request, HttpsConnectionContext.httpsClient(SSLContext.getDefault()));
                      responseCompletionStage.whenComplete((response, throwable) -> {
-                         if (throwable != null) {
-                           getSender().tell(new Trader.Refund(order.getActionType(),order.getQuote().getPrice()),getSelf());
+                         if (throwable != null || response.status().isFailure()) {
+                             getContext().getParent().tell(new Trader.Refund(order.getActionType(),order.getQuote().getPrice()),getSelf());
                          }
+                         response.discardEntityBytes(Materializer.createMaterializer(getContext()));
                          });
         }).build();
     }
