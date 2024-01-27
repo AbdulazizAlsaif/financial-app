@@ -25,11 +25,8 @@ public class QuoteConsumer extends AbstractActor {
 
     private final CompletionStage<Done> drainingControl;
 
-    private final Router traders;
-
-    public QuoteConsumer(ConsumerSettings<String, String> consumerSettings, Router traders) {
+    public QuoteConsumer(ConsumerSettings<String, String> consumerSettings) {
         this.drainingControl = createConsumer(consumerSettings);
-        this.traders = traders;
     }
 
     private CompletionStage<Done> createConsumer(ConsumerSettings<String, String> consumerSettings) {
@@ -47,7 +44,8 @@ public class QuoteConsumer extends AbstractActor {
         ObjectMapper objectMapper= new ObjectMapper();
         try {
            Quote quote= objectMapper.readValue(message, Quote.class);
-           traders.route(quote,ActorRef.noSender());
+           log.info("Consumed message from kafka, {}", quote);
+           getContext().getParent().tell(quote,self());
         }catch (Exception ignored){
         }
 
@@ -63,7 +61,7 @@ public class QuoteConsumer extends AbstractActor {
         drainingControl.toCompletableFuture().join();
     }
 
-    public static Props props(ConsumerSettings<String, String> consumerSettings,Router traders) {
-        return Props.create(QuoteConsumer.class, consumerSettings,traders);
+    public static Props props(ConsumerSettings<String, String> consumerSettings) {
+        return Props.create(QuoteConsumer.class,consumerSettings);
     }
 }
