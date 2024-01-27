@@ -8,6 +8,7 @@ import akka.event.LoggingAdapter;
 import com.financial.traders.entity.ActionType;
 import com.financial.traders.entity.Order;
 import com.financial.traders.entity.Quote;
+import java.util.Random;
 
 public class Trader extends AbstractActor  {
 
@@ -49,7 +50,7 @@ public class Trader extends AbstractActor  {
     @Override
     public Receive createReceive() {
         return receiveBuilder().match(Quote.class,quote -> {
-            if(quote.getPrice()<amount) {
+            if(quote.getPrice()<amount && new Random().nextBoolean()) {
                 log.info("Buying with current amount : {}, quote :{}", amount, quote );
                 Order order = new Order();
                 order.setActionType(ActionType.BUY);
@@ -57,7 +58,7 @@ public class Trader extends AbstractActor  {
                 order.setTraderName(traderName);
                 amount=amount-quote.getPrice();
                 orderHandler.tell(order,getSelf());
-            }else if (quote.getPrice()>15.0){
+            }else if (new Random().nextBoolean()){
                 log.info("Selling with current amount : {}, quote :{}", amount, quote);
                 Order order = new Order();
                 order.setActionType(ActionType.SELL);
