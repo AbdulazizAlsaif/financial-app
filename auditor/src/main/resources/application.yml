@@ -9,5 +9,5 @@ spring:
   data:
     mongodb:
       auto-index-creation: true
-      uri: mongodb://mongodb:27018/
+      uri: mongodb://host.docker.internal:27018/
       database: financial-audit

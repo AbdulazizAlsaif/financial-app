@@ -1,7 +1,4 @@
 version: '3.8'
-networks:
-  custom_network:
-    driver: bridge
 services:
   kafka1:
     image: confluentinc/cp-kafka:7.2.1
@@ -13,10 +10,10 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:29092,PLAINTEXT_HOST://kafka1:9092
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 10
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_PROCESS_ROLES: "broker,controller"
@@ -30,8 +27,7 @@ services:
     volumes:
       - ./scripts/update_run.sh:/tmp/update_run.sh
     command: 'bash -c ''if [ ! -f /tmp/update_run.sh ]; then echo "ERROR: Did you forget the update_run.sh file that came with this docker-compose.yml file?" && exit 1 ; else /tmp/update_run.sh && /etc/confluent/docker/run ; fi'''
-    networks:
-      - custom_network
+
 
   kafka-ui:
     container_name: kafka-ui-1
@@ -40,8 +36,7 @@ services:
       - 8086:8080
     depends_on:
       - kafka1
-    networks:
-      - custom_network
+
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka1:29092
@@ -53,21 +48,25 @@ services:
 
   mongodb:
     image: mongo:6.0.13-jammy
+    hostname: mongodb
     ports:
       - '27018:27017'
-    networks:
-      - custom_network
+
+
 
   auditor-svc:
     image: financialapp/audit-svc
+    hostname: auditor-svc
+    environment:
+      spring_data_mongodb_uri: mongodb://host.docker.internal:27018/
     build:
       context: ./auditor
     ports:
       - '8080:8080'
     depends_on:
       - mongodb
-    networks:
-      - custom_network
+
+
 
   quote-generator-svc:
     image: financialapp/quote-generator-svc
@@ -75,8 +74,6 @@ services:
       context: ./quote-generator
     depends_on:
       - auditor-svc
-    networks:
-      - custom_network
 
   traders-svc:
     image: financialapp/traders-svc
@@ -84,5 +81,3 @@ services:
       context: ./traders
     depends_on:
       - auditor-svc
-    networks:
-      - custom_network
