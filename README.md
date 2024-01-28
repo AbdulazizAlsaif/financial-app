@@ -1,5 +1,11 @@
 Hello, This project is a basic implementation for the below requirement using Akka framework, Spring boot, and Mongodb
 
+# Quick Start
+
+To run the applications execute the below command on the root folder
+
+`docker-compose up`
+
 
 # Requirments 
 
